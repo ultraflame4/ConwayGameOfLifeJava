@@ -13,7 +13,7 @@ public class main {
         JFrame root = new JFrame("GameOfLife");
         root.setSize(1020,720);
         root.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        CellGrid cellGrid = new CellGrid(800, 500);
+        CellGrid cellGrid = new CellGrid(900, root.getHeight());
         JButton playButton = new JButton("Play");
         playButton.addActionListener(new ActionListener() {
             @Override

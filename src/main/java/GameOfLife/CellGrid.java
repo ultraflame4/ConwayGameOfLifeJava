@@ -4,9 +4,10 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import java.util.concurrent.TimeUnit;
 
-public class CellGrid extends JComponent implements MouseListener {
+public class CellGrid extends JComponent implements MouseListener,MouseMotionListener {
     static final int CellSize = 10;
     private int width;
     private int height;
@@ -18,19 +19,22 @@ public class CellGrid extends JComponent implements MouseListener {
     public int fps = 30;
     Timer timer;
 
+
     public CellGrid(int width, int height) {
         this.height = height;
         this.width = width;
         cellCountX = (int) Math.floor(width / CellSize);
         cellCountY = (int) Math.floor(height / CellSize);
         cells = new boolean[cellCountX * cellCountY];
-        addMouseListener(this);
+
         this.setSize(width, height);
         this.setPreferredSize(new Dimension(width, height));
 
         timer = new Timer((1 / fps) * 1000, e -> {
             Simulate();
         });
+        addMouseListener(this);
+        addMouseMotionListener(this);
     }
 
     @Override
@@ -84,7 +88,7 @@ public class CellGrid extends JComponent implements MouseListener {
 
     boolean getCellState(int x, int y) {
         int index = XY2Index(x, y);
-        if (index < 0 || index > cells.length-1) {
+        if (index < 0 || index > cells.length - 1) {
             return false;
         }
         return cells[index];
@@ -120,15 +124,41 @@ public class CellGrid extends JComponent implements MouseListener {
                 }
             }
 
-            if (neighbourCount<2||neighbourCount > 3){
+            if (neighbourCount < 2 || neighbourCount > 3) {
                 //die
                 bufferCells[i] = false;
-            }
-            else if (neighbourCount==3) {
+            } else if (neighbourCount == 3) {
                 bufferCells[i] = true;
             }
         }
         cells = bufferCells;
+    }
+
+
+    public void ClearCells() {
+        repaint(0, 0, width, height);
+        cells = new boolean[cells.length];
+    }
+
+    @Override
+    public void mouseDragged(MouseEvent e) {
+        cellMouseSelect(e);
+    }
+
+    void cellMouseSelect(MouseEvent e){
+        int x = (int) Math.floor(e.getX() / CellSize);
+        int y = (int) Math.floor(e.getY() / CellSize);
+        int index = XY2Index(x, y);
+
+        cells[index] = SwingUtilities.isLeftMouseButton(e);
+        if (!isSimulating) {
+            repaint(0, 0, width, height);
+        }
+    }
+
+    @Override
+    public void mouseMoved(MouseEvent e) {
+
     }
 
     @Override
@@ -138,11 +168,7 @@ public class CellGrid extends JComponent implements MouseListener {
 
     @Override
     public void mousePressed(MouseEvent e) {
-        int x = (int) Math.floor(e.getX() / CellSize);
-        int y = (int) Math.floor(e.getY() / CellSize);
-        int index = XY2Index(x, y);
-        cells[index] = !cells[index];
-        repaint(0, 0, width, height);
+        cellMouseSelect(e);
     }
 
     @Override
@@ -158,10 +184,5 @@ public class CellGrid extends JComponent implements MouseListener {
     @Override
     public void mouseExited(MouseEvent e) {
 
-    }
-
-    public void ClearCells() {
-        repaint(0, 0, width, height);
-        cells = new boolean[cells.length];
     }
 }
